@@ -54,17 +54,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM10)
 	{
 		encoder_update_counter++;
-		// if (encoder_update_counter >= ENCODER_UPDATE_DIV)
-		if (encoder_update_counter >= 1000)
+		if (encoder_update_counter >= ENCODER_UPDATE_DIV)
 		{
 			encoder_update_counter = 0;
-			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);	// Blink test LED toggle every second
 			// Update encoder readings
-			// Update_Motor_RPM(&motor1);
+			Update_Motor_RPM(&motor1);
 		}
 		
 		// PID control loop update
-		// PID_UpdateMotor(&motor1);
+		PID_UpdateMotor(&motor1);
 	}
 }
 
