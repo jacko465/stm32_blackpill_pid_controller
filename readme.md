@@ -13,7 +13,7 @@ A PID-based motor control system for the STM32F411 Black Pill microcontroller, d
 ## Hardware Configuration
 
 ### Motor Specifications
-- Encoder: 7 PPR (basic) × 4 (quadrature) × 150 (gear ratio) = **4200 counts/revolution**
+- Encoder: 11 PPR (basic) × 4 (quadrature) × 35.5 (gear ratio) = **1562 counts/revolution**
 - PWM Frequency: Configured via TIM1
 - Control Loop: 1 ms update period (1 kHz)
 - Encoder Reading: 10 ms update period (100 Hz)
@@ -58,6 +58,8 @@ Default PID gains (defined in [`motor.h`](include/motor.h)):
 - **Output Range**: -1.0 to 1.0 (bidirectional control)
 
 ## Motor Control Functions
+
+This project has been coded for EN/PH driver control mode
 
 The [`motor.c`](src/motor.c) module provides:
 - `Motor_SetTargetRPM()`: Set target velocity in RPM
