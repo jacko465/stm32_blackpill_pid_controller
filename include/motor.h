@@ -31,17 +31,16 @@ typedef struct
     float kp, ki, kd;
 
     // PID state
-    float integral;
-    float prev_error;
+    volatile float integral;
+    volatile float prev_error;
     volatile float output;
 
     // Target
-    int32_t target_rpm;
-    float target_delta;     // Target ticks per update interval
+    volatile int32_t target_rpm;
+    volatile float target_delta;     // Target ticks per update interval
 
     // Integral clamp limit (anti-windup)
     float integral_limit;
-
     // Output limits
     float output_min;
     float output_max;
