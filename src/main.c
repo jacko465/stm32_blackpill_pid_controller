@@ -59,10 +59,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			encoder_update_counter = 0;
 			// Update encoder readings
 			Update_Motor_RPM(&motor1);
+			// Update_Motor_RPM(&motor2);
+			// Update_Motor_RPM(&motor3);
+			// Update_Motor_RPM(&motor4);
 		}
 		
 		// PID control loop update
 		PID_UpdateMotor(&motor1);
+		// PID_UpdateMotor(&motor2);
+		// PID_UpdateMotor(&motor3);
+		// PID_UpdateMotor(&motor4);
 	}
 }
 

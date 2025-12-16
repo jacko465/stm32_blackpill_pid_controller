@@ -4,10 +4,11 @@
 #include "main.h"
 
 // Motor params
-#define ENCODER_PPR_BASIC 7             // Encoder pulses per revolution (BASIC)
+#define ENCODER_PPR_BASIC 11             // Encoder pulses per revolution (BASIC)
 #define ENCODER_QUADRATURE_MULTIPLIER 4 // Quadrature encoding multiplier
-#define GEAR_RATIO 150                  // Motor gear ratio
-#define ENCODER_COUNTS_PER_REV (ENCODER_PPR_BASIC * ENCODER_QUADRATURE_MULTIPLIER * GEAR_RATIO) // Encoder counts per revolution (7*4*150)=4200 output shaft
+#define GEAR_RATIO 35.5f                  // Motor gear ratio
+#define ENCODER_COUNTS_PER_REV (ENCODER_PPR_BASIC * ENCODER_QUADRATURE_MULTIPLIER * GEAR_RATIO) // Encoder counts per revolution output shaft
+// #define ENCODER_COUNTS_PER_REV 1562
 
 // PID gains
 #define KP 0.1f
