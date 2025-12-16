@@ -4,9 +4,9 @@
 #include "main.h"
 
 // Motor params
-#define ENCODER_PPR_BASIC 11             // Encoder pulses per revolution (BASIC)
-#define ENCODER_QUADRATURE_MULTIPLIER 4 // Quadrature encoding multiplier
-#define GEAR_RATIO 35.5f                  // Motor gear ratio
+#define ENCODER_PPR_BASIC 11                // Encoder pulses per revolution (BASIC)
+#define ENCODER_QUADRATURE_MULTIPLIER 4     // Quadrature encoding multiplier
+#define GEAR_RATIO 35.5f                    // Motor gear ratio
 #define ENCODER_COUNTS_PER_REV (ENCODER_PPR_BASIC * ENCODER_QUADRATURE_MULTIPLIER * GEAR_RATIO) // Encoder counts per revolution output shaft
 // #define ENCODER_COUNTS_PER_REV 1562
 
@@ -46,10 +46,13 @@ typedef struct
     float output_min;
     float output_max;
 
-    // PWM outputs (GPIO / TIM channel)
-    TIM_HandleTypeDef *htim_pwm;
-    uint32_t pwm_channel_forward;
-    uint32_t pwm_channel_reverse;
+    // PWM setup
+    TIM_HandleTypeDef *htim_pwm;    // PWM timer
+    uint32_t pwm_channel;           // PWM channel
+
+    // DIR pin setup
+    GPIO_TypeDef *dir_port;         // Direction GPIO port
+    uint32_t dir_pin;               // Direction GPIO pin
 
 } Motor_t;
 
@@ -66,8 +69,8 @@ void Motor_Reverse(Motor_t *motor, float duty_cycle);
 
 // External motor instances
 extern Motor_t motor1;
-// extern Motor_t motor2;
-// extern Motor_t motor3;
-// extern Motor_t motor4;
+extern Motor_t motor2;
+extern Motor_t motor3;
+extern Motor_t motor4;
 
 #endif // __MOTOR_H

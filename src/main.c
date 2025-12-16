@@ -54,33 +54,33 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM10)
 	{
 		encoder_update_counter++;
-		if (encoder_update_counter >= ENCODER_UPDATE_DIV)
+		if (encoder_update_counter >= ENCODER_UPDATE_DIV)	// every ENCODER_UPDATE_DIV PID loops
 		{
 			encoder_update_counter = 0;
 			// Update encoder readings
 			Update_Motor_RPM(&motor1);
-			// Update_Motor_RPM(&motor2);
-			// Update_Motor_RPM(&motor3);
-			// Update_Motor_RPM(&motor4);
+			Update_Motor_RPM(&motor2);
+			Update_Motor_RPM(&motor3);
+			Update_Motor_RPM(&motor4);
 		}
 		
 		// PID control loop update
 		PID_UpdateMotor(&motor1);
-		// PID_UpdateMotor(&motor2);
-		// PID_UpdateMotor(&motor3);
-		// PID_UpdateMotor(&motor4);
+		PID_UpdateMotor(&motor2);
+		PID_UpdateMotor(&motor3);
+		PID_UpdateMotor(&motor4);
 	}
 }
 
 // Helper functions
 
-// Get encoder count from TIM2
+// Get encoder count from timer
 uint16_t Encoder_GetCount(TIM_HandleTypeDef *htim)
 {
     return (uint16_t)__HAL_TIM_GET_COUNTER(htim);
 }
 
-// SET PWM duty cycle on TIM3 channels for motor control (DC 0.0 to 1.0)
+// SET PWM duty cycle on TIM channels for motor control (DC 0.0 to 1.0)
 void SET_PWM_DC(TIM_HandleTypeDef *htim, uint8_t timer_channel, float duty_cycle)
 {
     if (duty_cycle < 0.0f) duty_cycle = 0.0f;

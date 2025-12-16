@@ -9,7 +9,7 @@ Motor_t motor1 = {
     .delta = 0,
 
     // Encoder timer pointer
-    .htim_encoder = &htim2, // TIM2
+    .htim_encoder = &htim5, // TIM5 (PA0/PA1) Motor 1 encoder
 
     //PID gains
     .kp = KP,
@@ -32,10 +32,133 @@ Motor_t motor1 = {
     .output_min = -1.0f,
     .output_max = 1.0f,
 
-    // PWM outputs
-    .htim_pwm = &htim3,
-    .pwm_channel_forward = TIM_CHANNEL_3,   // PB0
-    .pwm_channel_reverse = TIM_CHANNEL_4    // PB1
+    // PWM output
+    .htim_pwm = &htim1,                     // TIM1
+    .pwm_channel = TIM_CHANNEL_1,           // PA8
+
+    // DIR pin
+    .dir_port = GPIOB,                      // PB0
+    .dir_pin = GPIO_PIN_0                   // PB0
+};
+
+Motor_t motor2 = {
+    // Encoder state
+    .prev_count = 0,
+    .curr_count = 0,
+    .rpm = 0.0f,
+    .delta = 0,
+
+    // Encoder timer pointer
+    .htim_encoder = &htim3, // TIM3 (PA6/PA7) Motor 2 encoder
+
+    //PID gains
+    .kp = KP,
+    .ki = KI,
+    .kd = KD,
+
+    // PID state
+    .integral = 0.0f,
+    .prev_error = 0.0f,
+    .output = 0.0f,
+
+    // Target
+    .target_rpm = 0,
+    .target_delta = 0,
+
+    // Integral limit (anti-windup) 5x output clamp
+    .integral_limit = 5.0f,
+
+    // Output limits
+    .output_min = -1.0f,
+    .output_max = 1.0f,
+
+    // PWM output
+    .htim_pwm = &htim1,                     // TIM1
+    .pwm_channel = TIM_CHANNEL_2,           // PA9
+
+    // DIR pin
+    .dir_port = GPIOB,                      // PB0
+    .dir_pin = GPIO_PIN_1                   // PB1
+};
+
+Motor_t motor3 = {
+    // Encoder state
+    .prev_count = 0,
+    .curr_count = 0,
+    .rpm = 0.0f,
+    .delta = 0,
+
+    // Encoder timer pointer
+    .htim_encoder = &htim4, // TIM4 (PB6/PB7) Motor 3 encoder
+
+    //PID gains
+    .kp = KP,
+    .ki = KI,
+    .kd = KD,
+
+    // PID state
+    .integral = 0.0f,
+    .prev_error = 0.0f,
+    .output = 0.0f,
+
+    // Target
+    .target_rpm = 0,
+    .target_delta = 0,
+
+    // Integral limit (anti-windup) 5x output clamp
+    .integral_limit = 5.0f,
+
+    // Output limits
+    .output_min = -1.0f,
+    .output_max = 1.0f,
+
+    // PWM output
+    .htim_pwm = &htim1,                     // TIM1
+    .pwm_channel = TIM_CHANNEL_3,           // PA10
+
+    // DIR pin
+    .dir_port = GPIOB,                      // PB0
+    .dir_pin = GPIO_PIN_2                   // PB2
+};
+
+Motor_t motor4 = {
+    // Encoder state
+    .prev_count = 0,
+    .curr_count = 0,
+    .rpm = 0.0f,
+    .delta = 0,
+
+    // Encoder timer pointer
+    .htim_encoder = &htim2, // TIM2 (PA0/PA1) Motor 4 encoder
+
+    //PID gains
+    .kp = KP,
+    .ki = KI,
+    .kd = KD,
+
+    // PID state
+    .integral = 0.0f,
+    .prev_error = 0.0f,
+    .output = 0.0f,
+
+    // Target
+    .target_rpm = 0,
+    .target_delta = 0,
+
+    // Integral limit (anti-windup) 5x output clamp
+    .integral_limit = 5.0f,
+
+    // Output limits
+    .output_min = -1.0f,
+    .output_max = 1.0f,
+
+    // PWM output
+    .htim_pwm = &htim1,                     // TIM1
+    .pwm_channel = TIM_CHANNEL_4,           // PA11
+
+    // DIR pin
+    .dir_port = GPIOB,                      // PB0
+    .dir_pin = GPIO_PIN_10                  // PB10
 };
 
 // PID Loop function
@@ -102,27 +225,27 @@ void Motor_ApplyOutput(Motor_t *motor)
 // Motor break function
 void Motor_Break(Motor_t *motor)
 {
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel_forward, 1.0f);
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel_reverse, 1.0f);
+    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, 1.0f);
+    HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_SET);
 }
 
 // Motor coast function
 void Motor_Coast(Motor_t *motor)
 {
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel_forward, 0.0f);
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel_reverse, 0.0f);
+    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, 0.0f);
+    HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_RESET);
 }
 
 // Basic motor forward function
 void Motor_Forward(Motor_t *motor, float duty_cycle)
 {
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel_forward, duty_cycle);
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel_reverse, 0.0f);
+    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, duty_cycle);
+    HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_RESET);
 }
 
 // Basic motor reverse function
 void Motor_Reverse(Motor_t *motor, float duty_cycle)
 {
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel_forward, 0.0f);
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel_reverse, duty_cycle);
+    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, duty_cycle);
+    HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_SET);
 }
