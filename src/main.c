@@ -12,14 +12,16 @@ int main(void)
 
 	// Initialize all configured peripherals
 	MX_GPIO_Init();
-	MX_DMA_Init();
+	MX_DMA_Init();		// DMA for USART2 RX
 	MX_TIM1_Init();		// PWM timer
 	MX_TIM2_Init();		// Encoder timer Motor 4
 	MX_TIM3_Init();		// Encoder timer Motor 2
 	MX_TIM4_Init();		// Encoder timer Motor 3
 	MX_TIM5_Init();		// Encoder timer Motor 1
 	MX_TIM10_Init();	// Interrupt timer for PID loop
-	MX_USART2_UART_Init();
+	MX_USART2_UART_Init();	// Init USART2
+	HAL_UART_Receive_DMA(&huart2, rx_dma_buf, RX_BUF_LEN); // Start USART2 RX in DMA mode
+	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE); // Enable IDLE line interrupt for USART2
 
 	// Start encoder timers
 	HAL_TIM_Encoder_Start(&htim5, TIM_CHANNEL_ALL); // Motor 1 encoder
@@ -71,6 +73,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		PID_UpdateMotor(&motor3);
 		PID_UpdateMotor(&motor4);
 	}
+}
+
+// USART2 RX Idle ISR
+void USART2_OnIdle(void)
+{
+	// TODO
 }
 
 // Helper functions
