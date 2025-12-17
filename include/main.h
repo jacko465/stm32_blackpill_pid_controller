@@ -8,6 +8,7 @@ extern "C" {
 #include <stdio.h>
 #include "stm32f4xx_hal.h"
 #include "motor.h"
+#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
