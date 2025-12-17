@@ -15,6 +15,11 @@
 #define KI 0.125f
 #define KD 0.0f
 
+// PID limits
+#define PID_OUTPUT_MAX 1.0f                 // Maximum output (full speed)
+#define PID_OUTPUT_MIN -1.0f                // Minimum output (reverse full speed)
+#define PID_INTEGRAL_LIMIT 5.0f             // Anti-windup integral limit
+
 // Motor struct definition
 typedef struct 
 {

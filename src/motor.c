@@ -26,11 +26,11 @@ Motor_t motor1 = {
     .target_delta = 0,
 
     // Integral limit (anti-windup) 5x output clamp
-    .integral_limit = 5.0f,
+    .integral_limit = PID_INTEGRAL_LIMIT,
 
     // Output limits
-    .output_min = -1.0f,
-    .output_max = 1.0f,
+    .output_min = PID_OUTPUT_MIN,
+    .output_max = PID_OUTPUT_MAX,
 
     // PWM output
     .htim_pwm = &htim1,                     // TIM1
@@ -66,12 +66,11 @@ Motor_t motor2 = {
     .target_delta = 0,
 
     // Integral limit (anti-windup) 5x output clamp
-    .integral_limit = 5.0f,
+    .integral_limit = PID_INTEGRAL_LIMIT,
 
     // Output limits
-    .output_min = -1.0f,
-    .output_max = 1.0f,
-
+    .output_min = PID_OUTPUT_MIN,
+    .output_max = PID_OUTPUT_MAX,
     // PWM output
     .htim_pwm = &htim1,                     // TIM1
     .pwm_channel = TIM_CHANNEL_2,           // PA9
@@ -106,12 +105,11 @@ Motor_t motor3 = {
     .target_delta = 0,
 
     // Integral limit (anti-windup) 5x output clamp
-    .integral_limit = 5.0f,
+    .integral_limit = PID_INTEGRAL_LIMIT,
 
     // Output limits
-    .output_min = -1.0f,
-    .output_max = 1.0f,
-
+    .output_min = PID_OUTPUT_MIN,
+    .output_max = PID_OUTPUT_MAX,
     // PWM output
     .htim_pwm = &htim1,                     // TIM1
     .pwm_channel = TIM_CHANNEL_3,           // PA10
@@ -146,12 +144,11 @@ Motor_t motor4 = {
     .target_delta = 0,
 
     // Integral limit (anti-windup) 5x output clamp
-    .integral_limit = 5.0f,
+    .integral_limit = PID_INTEGRAL_LIMIT,
 
     // Output limits
-    .output_min = -1.0f,
-    .output_max = 1.0f,
-
+    .output_min = PID_OUTPUT_MIN,
+    .output_max = PID_OUTPUT_MAX,
     // PWM output
     .htim_pwm = &htim1,                     // TIM1
     .pwm_channel = TIM_CHANNEL_4,           // PA11
