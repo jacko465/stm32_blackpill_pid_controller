@@ -5,7 +5,7 @@
 
 // Motor params
 #define ENCODER_PPR_BASIC 11                // Encoder pulses per revolution (BASIC)
-#define ENCODER_QUADRATURE_MULTIPLIER 4     // Quadrature encoding multiplier
+#define ENCODER_QUADRATURE_MULTIPLIER 2     // Quadrature encoding multiplier
 #define GEAR_RATIO 35.5f                    // Motor gear ratio
 #define ENCODER_COUNTS_PER_REV (ENCODER_PPR_BASIC * ENCODER_QUADRATURE_MULTIPLIER * GEAR_RATIO) // Encoder counts per revolution output shaft
 // #define ENCODER_COUNTS_PER_REV 1562
@@ -42,7 +42,8 @@ typedef struct
 
     // Target
     volatile int32_t target_rpm;
-    volatile float target_delta;     // Target ticks per update interval
+    // volatile float target_delta;     // Target ticks per update interval
+    volatile int32_t target_delta;
 
     // Integral clamp limit (anti-windup)
     float integral_limit;
@@ -67,7 +68,7 @@ void Motor_SetTargetRPM(Motor_t *motor, int32_t target_rpm);
 
 void Motor_ApplyOutput(Motor_t *motor);
 void Motor_Break(Motor_t *motor);
-void Motor_Coast(Motor_t *motor);
+// void Motor_Coast(Motor_t *motor);
 void Motor_Forward(Motor_t *motor, float duty_cycle);
 void Motor_Reverse(Motor_t *motor, float duty_cycle);
 

@@ -41,10 +41,42 @@ int main(void)
 	// Main loop
 	while (1)
 	{
-		__WFI();	// Wait for interrupt to save power
+		// __WFI();	// Wait for interrupt to save power
 
 		// HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 		// HAL_Delay(500);
+
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+		// Motor_SetTargetRPM(&motor1, 50);
+		// HAL_Delay(1000);
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+		// Motor_SetTargetRPM(&motor1, 0);
+		// HAL_Delay(1000);
+
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+		// Motor_Forward(&motor1, 1.0f);
+		// HAL_Delay(2000);
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+		// Motor_Break(&motor1);
+		// HAL_Delay(2000);
+
+		// Motor_Forward(&motor1, 1.0f);
+		// Motor_SetTargetRPM(&motor1, 130);
+		Motor_SetTargetRPM(&motor1, 75);
+
+		printf(">");
+        printf("rpm:%.2f", motor1.rpm);
+        printf(",output:%.2f", motor1.output);
+        printf("\r\n");
+        HAL_Delay(50);
+
+		// printf("LED SET\r\n");
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+		// HAL_Delay(1000);
+		// printf("LED RESET\r\n");
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+		// HAL_Delay(500);
+
 	}
 }
 

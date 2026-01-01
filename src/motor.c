@@ -162,7 +162,7 @@ Motor_t motor4 = {
 void PID_UpdateMotor(Motor_t *motor)
 {
     // Compute error terms
-    float error = motor->target_delta - (float)(motor->delta);
+    float error = (float)motor->target_delta - (float)(motor->delta);
     motor->integral += error * PID_UPDATE_PERIOD;
     float derivative = (error - motor->prev_error) / PID_UPDATE_PERIOD;
     motor->prev_error = error;
@@ -196,7 +196,7 @@ void Update_Motor_RPM(Motor_t *motor)
 void Motor_SetTargetRPM(Motor_t *motor, int32_t target_rpm)
 {
     motor->target_rpm = target_rpm;
-    motor->target_delta = target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD;
+    motor->target_delta = (int32_t)(target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD);
 }
 
 // motor driving methods
@@ -215,23 +215,23 @@ void Motor_ApplyOutput(Motor_t *motor)
     }
     else
     {
-        Motor_Coast(motor);
+        Motor_Break(motor);
     }
 }
 
 // Motor break function
 void Motor_Break(Motor_t *motor)
 {
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, 1.0f);
+    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, 0.0f);
     HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_SET);
 }
 
 // Motor coast function
-void Motor_Coast(Motor_t *motor)
-{
-    SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, 0.0f);
-    HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_RESET);
-}
+// void Motor_Coast(Motor_t *motor)
+// {
+//     SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, 0.0f);
+//     HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_RESET);
+// }
 
 // Basic motor forward function
 void Motor_Forward(Motor_t *motor, float duty_cycle)
