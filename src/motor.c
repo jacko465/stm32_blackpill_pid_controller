@@ -162,7 +162,8 @@ Motor_t motor4 = {
 void PID_UpdateMotor(Motor_t *motor)
 {
     // Compute error terms
-    float error = (float)motor->target_delta - (float)(motor->delta);
+    // float error = (float)motor->target_delta - (float)(motor->delta);
+    float error = motor->target_delta - (float)(motor->delta);
     motor->integral += error * PID_UPDATE_PERIOD;
     float derivative = (error - motor->prev_error) / PID_UPDATE_PERIOD;
     motor->prev_error = error;
@@ -196,7 +197,8 @@ void Update_Motor_RPM(Motor_t *motor)
 void Motor_SetTargetRPM(Motor_t *motor, int32_t target_rpm)
 {
     motor->target_rpm = target_rpm;
-    motor->target_delta = (int32_t)(target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD);
+    // motor->target_delta = (int32_t)(target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD);
+    motor->target_delta = target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD;
 }
 
 // motor driving methods

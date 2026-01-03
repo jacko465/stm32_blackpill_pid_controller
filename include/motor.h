@@ -11,8 +11,8 @@
 // #define ENCODER_COUNTS_PER_REV 1562
 
 // PID gains
-#define KP 0.1f
-#define KI 0.125f
+#define KP 0.005f
+#define KI 0.2f
 #define KD 0.0f
 
 // PID limits
@@ -43,7 +43,7 @@ typedef struct
     // Target
     volatile int32_t target_rpm;
     // volatile float target_delta;     // Target ticks per update interval
-    volatile int32_t target_delta;
+    volatile float target_delta;
 
     // Integral clamp limit (anti-windup)
     float integral_limit;

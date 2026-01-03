@@ -60,9 +60,7 @@ int main(void)
 		// Motor_Break(&motor1);
 		// HAL_Delay(2000);
 
-		// Motor_Forward(&motor1, 1.0f);
-		// Motor_SetTargetRPM(&motor1, 130);
-		Motor_SetTargetRPM(&motor1, 75);
+		Motor_SetTargetRPM(&motor1, 130);
 
 		printf(">");
         printf("rpm:%.2f", motor1.rpm);

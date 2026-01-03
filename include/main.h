@@ -19,7 +19,8 @@ uint8_t rx_dma_buf[RX_BUF_LEN]; // DMA RX buffer
 
 // LOOP FREQUENCIES
 #define PID_LOOP_FREQUENCY_HZ 1000.0f         // 1kHz PID loop
-#define ENCODER_UPDATE_DIV 10                 // Update encoder reading every 10 PID loops
+#define ENCODER_UPDATE_DIV 50                 // Update encoder reading every 50 PID loops
+// #define ENCODER_UPDATE_DIV 10                 // Update encoder reading every 10 PID loops
 #define ENCODER_UPDATE_FREQUENCY_HZ (PID_LOOP_FREQUENCY_HZ / ENCODER_UPDATE_DIV)
 
 #define PID_UPDATE_PERIOD (1.0f / PID_LOOP_FREQUENCY_HZ)
