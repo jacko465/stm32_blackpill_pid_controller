@@ -1,6 +1,18 @@
 #include "main.h"
+#include <string.h>
+#include <stdbool.h>
 
 void SystemClock_Config(void);
+uint8_t rx_dma_buf[RX_BUF_LEN]; // DMA RX buffer
+static volatile uint16_t rx_old_pos = 0; // Old position in RX DMA buffer
+
+static char line_buf[LINE_MAX];
+static volatile uint16_t line_len = 0;
+
+static volatile bool msg_ready = false;
+static char msg_buf[LINE_MAX];
+
+static void ProcessBytes(const uint8_t *data, uint16_t len);
 
 int main(void)
 {
@@ -43,37 +55,31 @@ int main(void)
 	{
 		// __WFI();	// Wait for interrupt to save power
 
-		// HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		// HAL_Delay(500);
-
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 		// Motor_SetTargetRPM(&motor1, 50);
-		// HAL_Delay(1000);
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		// Motor_SetTargetRPM(&motor1, 0);
-		// HAL_Delay(1000);
+		// Motor_SetTargetRPM(&motor2, 50);
+		// Motor_SetTargetRPM(&motor3, 50);
+		// Motor_SetTargetRPM(&motor4, 50);
 
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-		// Motor_Forward(&motor1, 1.0f);
-		// HAL_Delay(2000);
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		// Motor_Break(&motor1);
-		// HAL_Delay(2000);
+		// printf(">");
+        // printf("motor1rpm:%.2f", motor1.rpm);
+        // printf(",motor1output:%.2f", motor1.output);
+		// printf(",motor2rpm:%.2f", motor2.rpm);
+        // printf(",motor2output:%.2f", motor2.output);
+		// printf(",motor3rpm:%.2f", motor3.rpm);
+        // printf(",motor3output:%.2f", motor3.output);
+		// printf(",motor4rpm:%.2f", motor4.rpm);
+        // printf(",motor4output:%.2f", motor4.output);
+        // printf("\r\n");
+        // HAL_Delay(50);
 
-		Motor_SetTargetRPM(&motor1, 130);
+		// Handle received USART messages
+		if (msg_ready)
+		{
+			msg_ready = false;
+			Handle_USART_Message();
+		}
 
-		printf(">");
-        printf("rpm:%.2f", motor1.rpm);
-        printf(",output:%.2f", motor1.output);
-        printf("\r\n");
-        HAL_Delay(50);
-
-		// printf("LED SET\r\n");
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-		// HAL_Delay(1000);
-		// printf("LED RESET\r\n");
-		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		// HAL_Delay(500);
+		// Report status over serial
 
 	}
 }
@@ -108,10 +114,63 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 // USART2 RX Idle ISR
 void USART2_OnIdle(void)
 {
-	// TODO
+    uint16_t new_pos = RX_BUF_LEN - __HAL_DMA_GET_COUNTER(huart2.hdmarx);
+    if (new_pos == rx_old_pos) return;
+
+    if (new_pos > rx_old_pos)
+    {
+        ProcessBytes(&rx_dma_buf[rx_old_pos], new_pos - rx_old_pos);
+    }
+    else
+    {
+        ProcessBytes(&rx_dma_buf[rx_old_pos], RX_BUF_LEN - rx_old_pos);
+        if (new_pos > 0) ProcessBytes(&rx_dma_buf[0], new_pos);
+    }
+
+    rx_old_pos = new_pos;
+}
+
+// Process received bytes from USART2 DMA buffer
+static void ProcessBytes(const uint8_t *data, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; i++)
+    {
+        char c = (char)data[i];
+        if (c == '\r') continue;
+
+        if (c == '\n')
+        {
+            // finalize line
+            uint16_t n = line_len;
+            if (n >= LINE_MAX) n = LINE_MAX - 1;
+
+            memcpy(msg_buf, line_buf, n);
+            msg_buf[n] = '\0';
+
+            line_len = 0;
+            msg_ready = true;   // main loop will handle it
+        }
+        else
+        {
+            if (line_len < LINE_MAX - 1)
+                line_buf[line_len++] = c;
+            else
+                line_len = 0;   // overflow -> reset/drop
+        }
+    }
 }
 
 // Helper functions
+
+// Handle USART RX
+void Handle_USART_Message(void)
+{
+	// Example: echo back the received message
+	// printf("Received: %s\r\n", msg_buf);
+	HAL_UART_Transmit(&huart2, (uint8_t*)"Echo: ", 6, 100);
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg_buf, strlen(msg_buf), 100);
+	HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
+}
 
 // Get encoder count from timer
 uint16_t Encoder_GetCount(TIM_HandleTypeDef *htim)
