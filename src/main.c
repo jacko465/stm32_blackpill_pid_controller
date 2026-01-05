@@ -12,6 +12,9 @@ static volatile uint16_t line_len = 0;
 static volatile bool msg_ready = false;
 static char msg_buf[LINE_MAX];
 
+static uint32_t last_tel_ms = 0;
+const uint32_t TEL_PERIOD_MS = 20;	// 50 Hz telemetry
+
 static void ProcessBytes(const uint8_t *data, uint16_t len);
 
 int main(void)
@@ -53,25 +56,6 @@ int main(void)
 	// Main loop
 	while (1)
 	{
-		// __WFI();	// Wait for interrupt to save power
-
-		// Motor_SetTargetRPM(&motor1, 50);
-		// Motor_SetTargetRPM(&motor2, 50);
-		// Motor_SetTargetRPM(&motor3, 50);
-		// Motor_SetTargetRPM(&motor4, 50);
-
-		// printf(">");
-        // printf("motor1rpm:%.2f", motor1.rpm);
-        // printf(",motor1output:%.2f", motor1.output);
-		// printf(",motor2rpm:%.2f", motor2.rpm);
-        // printf(",motor2output:%.2f", motor2.output);
-		// printf(",motor3rpm:%.2f", motor3.rpm);
-        // printf(",motor3output:%.2f", motor3.output);
-		// printf(",motor4rpm:%.2f", motor4.rpm);
-        // printf(",motor4output:%.2f", motor4.output);
-        // printf("\r\n");
-        // HAL_Delay(50);
-
 		// Handle received USART messages
 		if (msg_ready)
 		{
@@ -79,8 +63,13 @@ int main(void)
 			Handle_USART_Message();
 		}
 
-		// Report status over serial
-
+		// Report status over serial every TEL_PERIOD_MS
+		uint32_t now = HAL_GetTick();
+		if (now - last_tel_ms >= TEL_PERIOD_MS)
+		{
+			last_tel_ms = now;
+			Report_Telemetry_USART();
+		}
 	}
 }
 
@@ -170,6 +159,33 @@ void Handle_USART_Message(void)
 	HAL_UART_Transmit(&huart2, (uint8_t*)"Echo: ", 6, 100);
 	HAL_UART_Transmit(&huart2, (uint8_t*)msg_buf, strlen(msg_buf), 100);
 	HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
+
+	/* List of commands:
+		SET,<LEFT_RPM>, <RIGHT_RPM>		- Set target RPMs for motors
+		EN,<1|0>                     	- Enable or disable motors
+		BRK,<1|0>                    	- Enable or disable motor braking
+		ESTOP					   		- Emergency stop (set breaks on for 3 seconds and then disable motors, latches until controller restart)
+		PING							- Respond with PONG
+		PID,<P>,<I>,<D>            		- Set PID parameters for all motors
+	*/
+}
+
+// Report status over USART
+void Report_Telemetry_USART(void)
+{
+	// Telemetry format:
+	// TEL,<motor1_rpm>,<motor2_rpm>,<motor3_rpm>,<motor4_rpm>\r\n
+
+	char buf[160];
+	int n = snprintf(buf, sizeof(buf),
+		"TEL,%d,%d,%d,%d\r\n",
+		(int)motor1.rpm, (int)motor2.rpm, (int)motor3.rpm, (int)motor4.rpm
+	);
+
+	if (n > 0)
+	{
+		HAL_UART_Transmit(&huart2, (uint8_t*)buf, (uint16_t)n, 20);
+	}
 }
 
 // Get encoder count from timer

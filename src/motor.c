@@ -228,7 +228,7 @@ void Motor_Break(Motor_t *motor)
     HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_SET);
 }
 
-// Motor coast function
+// Motor coast function (pololu 4035 does not support coasting in ph/en mode)
 // void Motor_Coast(Motor_t *motor)
 // {
 //     SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, 0.0f);

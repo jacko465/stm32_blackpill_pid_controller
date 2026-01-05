@@ -32,6 +32,7 @@ uint16_t Encoder_GetCount(TIM_HandleTypeDef *htim);
 void SET_PWM_DC(TIM_HandleTypeDef *htim, uint8_t timer_channel, float duty_cycle);
 void USART2_OnIdle(void);
 void Handle_USART_Message(void);
+void Report_Telemetry_USART(void);
 
 #ifdef __cplusplus
 }
