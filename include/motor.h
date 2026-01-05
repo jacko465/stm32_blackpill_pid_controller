@@ -41,6 +41,7 @@ typedef struct
     volatile float output;
 
     // Target
+    volatile uint8_t enabled;
     volatile int32_t target_rpm;
     // volatile float target_delta;     // Target ticks per update interval
     volatile float target_delta;
@@ -65,12 +66,18 @@ typedef struct
 void PID_UpdateMotor(Motor_t *motor);
 void Update_Motor_RPM(Motor_t *motor);
 void Motor_SetTargetRPM(Motor_t *motor, int32_t target_rpm);
+void Enable_Motors();
+void Disable_Motors();
 
 void Motor_ApplyOutput(Motor_t *motor);
 void Motor_Break(Motor_t *motor);
 // void Motor_Coast(Motor_t *motor);
 void Motor_Forward(Motor_t *motor, float duty_cycle);
 void Motor_Reverse(Motor_t *motor, float duty_cycle);
+void Set_Left_RPM(int32_t rpm);
+void Set_Right_RPM(int32_t rpm);
+void Spin_Left(int32_t rpm);
+void Spin_Right(int32_t rpm);
 
 // External motor instances
 extern Motor_t motor1;

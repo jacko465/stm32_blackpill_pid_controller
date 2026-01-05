@@ -22,6 +22,7 @@ Motor_t motor1 = {
     .output = 0.0f,
 
     // Target
+    .enabled = 0,
     .target_rpm = 0,
     .target_delta = 0,
 
@@ -62,6 +63,7 @@ Motor_t motor2 = {
     .output = 0.0f,
 
     // Target
+    .enabled = 0,
     .target_rpm = 0,
     .target_delta = 0,
 
@@ -101,6 +103,7 @@ Motor_t motor3 = {
     .output = 0.0f,
 
     // Target
+    .enabled = 0,
     .target_rpm = 0,
     .target_delta = 0,
 
@@ -140,6 +143,7 @@ Motor_t motor4 = {
     .output = 0.0f,
 
     // Target
+    .enabled = 0,
     .target_rpm = 0,
     .target_delta = 0,
 
@@ -161,6 +165,12 @@ Motor_t motor4 = {
 // PID Loop function
 void PID_UpdateMotor(Motor_t *motor)
 {
+    if (!motor->enabled)
+    {
+        Motor_Break(motor);
+        return;
+    }
+
     // Compute error terms
     // float error = (float)motor->target_delta - (float)(motor->delta);
     float error = motor->target_delta - (float)(motor->delta);
@@ -199,6 +209,22 @@ void Motor_SetTargetRPM(Motor_t *motor, int32_t target_rpm)
     motor->target_rpm = target_rpm;
     // motor->target_delta = (int32_t)(target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD);
     motor->target_delta = target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD;
+}
+
+void Enable_Motors()
+{
+    motor1.enabled = 1;
+    motor2.enabled = 1;
+    motor3.enabled = 1;
+    motor4.enabled = 1;
+}
+
+void Disable_Motors()
+{
+    motor1.enabled = 0;
+    motor2.enabled = 0;
+    motor3.enabled = 0;
+    motor4.enabled = 0;
 }
 
 // motor driving methods
@@ -247,4 +273,33 @@ void Motor_Reverse(Motor_t *motor, float duty_cycle)
 {
     SET_PWM_DC(motor->htim_pwm, motor->pwm_channel, duty_cycle);
     HAL_GPIO_WritePin(motor->dir_port, motor->dir_pin, GPIO_PIN_SET);
+}
+
+// Skid steer functions
+void Set_Left_RPM(int32_t rpm)
+{
+    Motor_SetTargetRPM(&motor1, rpm);
+    Motor_SetTargetRPM(&motor2, rpm);
+}
+
+void Set_Right_RPM(int32_t rpm)
+{
+    Motor_SetTargetRPM(&motor3, rpm);
+    Motor_SetTargetRPM(&motor4, rpm);
+}
+
+void Spin_Left(int32_t rpm)
+{
+    Motor_SetTargetRPM(&motor1, -rpm);
+    Motor_SetTargetRPM(&motor2, -rpm);
+    Motor_SetTargetRPM(&motor3, rpm);
+    Motor_SetTargetRPM(&motor4, rpm);
+}
+
+void Spin_Right(int32_t rpm)
+{
+    Motor_SetTargetRPM(&motor1, rpm);
+    Motor_SetTargetRPM(&motor2, rpm);
+    Motor_SetTargetRPM(&motor3, -rpm);
+    Motor_SetTargetRPM(&motor4, -rpm);
 }
