@@ -168,11 +168,11 @@ static inline bool streq(const char *a, const char *b) { return strcmp(a,b) == 0
 void Handle_USART_Message(void)
 {
 	/* List of commands:
-		SET,<LEFT_RPM>, <RIGHT_RPM>		- Set target RPMs for motors
+		SET,<LEFT_RPM>,<RIGHT_RPM>		- Set target RPMs for motors
 		EN,<1|0>                     	- Enable or disable motors
 		BRK,<1|0>                    	- Enable or disable motor braking
 		ESTOP					   		- Emergency stop (disable motors, latches until controller restart)
-		PING							- Respond with PONG
+		PING							- Check is alive
 		PID,<P>,<I>,<D>            		- Set PID parameters for all motors
 	*/
 	if (ESTOP) return; // ignore all commands if ESTOP is set
@@ -234,6 +234,12 @@ void Handle_USART_Message(void)
 	{
 		SET_ESTOP();
 		uart_print("OK,ESTOP\r\n");
+	}
+
+	// PING
+	else if (streq(cmd, "PING"))
+	{
+		uart_print("OK\r\n");
 	}
 
 	// PID
