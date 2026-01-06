@@ -167,12 +167,6 @@ static inline bool streq(const char *a, const char *b) { return strcmp(a,b) == 0
 // Handle USART RX
 void Handle_USART_Message(void)
 {
-	// Example: echo back the received message
-	// printf("Received: %s\r\n", msg_buf);
-	// HAL_UART_Transmit(&huart2, (uint8_t*)"Echo: ", 6, 100);
-	// HAL_UART_Transmit(&huart2, (uint8_t*)msg_buf, strlen(msg_buf), 100);
-	// HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
-
 	/* List of commands:
 		SET,<LEFT_RPM>, <RIGHT_RPM>		- Set target RPMs for motors
 		EN,<1|0>                     	- Enable or disable motors
@@ -196,6 +190,7 @@ void Handle_USART_Message(void)
 	
 	if (!cmd) return;
 
+	// SET,<LEFT_RPM>, <RIGHT_RPM>
 	if (streq(cmd, "SET"))
 	{
 		int32_t l, r;
@@ -206,6 +201,49 @@ void Handle_USART_Message(void)
 			uart_print("OK\r\n");
 		}
 		else uart_print("ERR,BADARGS\r\n");
+	}
+
+	// EN,<1|0>
+	else if (streq(cmd, "EN"))
+	{
+		int32_t en;
+		if (parse_int32(a1, &en))
+		{
+			if (en) Enable_Motors();
+			else Disable_Motors();
+			uart_print("OK\r\n");
+		}
+		else uart_print("ERR,BADARGS\r\n");
+	}
+
+	// BRK,<1|0>
+	else if (streq(cmd, "BRK"))
+	{
+		int32_t brk;
+		if (parse_int32(a1, &brk))
+		{
+			if (brk) Enable_Motor_Braking();
+			else Disable_Motor_Braking();
+			uart_print("OK\r\n");
+		}
+		else uart_print("ERR,BADARGS\r\n");
+	}
+
+	// ESTOP
+	else if (streq(cmd, "ESTOP"))
+	{
+		SET_ESTOP();
+		uart_print("OK,ESTOP\r\n");
+	}
+
+	// PID
+	else if (streq(cmd, "PID"))
+	{
+		float p, i, d;
+		if (a1 && a2 && a3)
+		{
+			// not implemented yet
+		}
 	}
 }
 

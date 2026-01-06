@@ -210,7 +210,6 @@ void Update_Motor_RPM(Motor_t *motor)
 void Motor_SetTargetRPM(Motor_t *motor, int32_t target_rpm)
 {
     motor->target_rpm = target_rpm;
-    // motor->target_delta = (int32_t)(target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD);
     motor->target_delta = target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD;
 }
 
@@ -235,6 +234,8 @@ void Disable_Motors(void)
 void SET_ESTOP(void)
 {
     ESTOP = 1;
+    Set_Left_RPM(0);
+    Set_Right_RPM(0);
     Disable_Motors();
 }
 
