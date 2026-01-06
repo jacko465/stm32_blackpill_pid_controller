@@ -1,5 +1,8 @@
 #include "motor.h"
 
+uint8_t Motors_Enabled = 0;
+uint8_t ESTOP = 0;
+
 // motor instances
 Motor_t motor1 = {
     // Encoder state
@@ -211,20 +214,28 @@ void Motor_SetTargetRPM(Motor_t *motor, int32_t target_rpm)
     motor->target_delta = target_rpm * ((float)ENCODER_COUNTS_PER_REV / 60.0f) * ENCODER_UPDATE_PERIOD;
 }
 
-void Enable_Motors()
+void Enable_Motors(void)
 {
+    Motors_Enabled = 1;
     motor1.enabled = 1;
     motor2.enabled = 1;
     motor3.enabled = 1;
     motor4.enabled = 1;
 }
 
-void Disable_Motors()
+void Disable_Motors(void)
 {
+    Motors_Enabled = 0;
     motor1.enabled = 0;
     motor2.enabled = 0;
     motor3.enabled = 0;
     motor4.enabled = 0;
+}
+
+void SET_ESTOP(void)
+{
+    ESTOP = 1;
+    Disable_Motors();
 }
 
 // motor driving methods

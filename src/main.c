@@ -1,6 +1,8 @@
 #include "main.h"
 #include <string.h>
-#include <stdbool.h>
+// #include <stdbool.h>
+#include <stdlib.h>
+// #include <stdint.h>
 
 void SystemClock_Config(void);
 uint8_t rx_dma_buf[RX_BUF_LEN]; // DMA RX buffer
@@ -14,6 +16,7 @@ static char msg_buf[LINE_MAX];
 
 static uint32_t last_tel_ms = 0;
 const uint32_t TEL_PERIOD_MS = 20;	// 50 Hz telemetry
+static uint32_t last_rx_ms = 0;
 
 static void ProcessBytes(const uint8_t *data, uint16_t len);
 
@@ -57,14 +60,22 @@ int main(void)
 	while (1)
 	{
 		// Handle received USART messages
+		uint32_t now = HAL_GetTick();
 		if (msg_ready)
 		{
+			last_rx_ms = now;
 			msg_ready = false;
 			Handle_USART_Message();
 		}
+		else if (now - last_rx_ms >= LAST_RX_TIMEOUT_MS)
+		{
+			// No messages received for LAST_RX_TIMEOUT_MS -> stop motors
+			Set_Left_RPM(0);
+			Set_Right_RPM(0);
+			Disable_Motors();
+		}
 
-		// Report status over serial every TEL_PERIOD_MS
-		uint32_t now = HAL_GetTick();
+		// Report telemetry over serial every TEL_PERIOD_MS
 		if (now - last_tel_ms >= TEL_PERIOD_MS)
 		{
 			last_tel_ms = now;
@@ -151,41 +162,87 @@ static void ProcessBytes(const uint8_t *data, uint16_t len)
 
 // Helper functions
 
+static inline bool streq(const char *a, const char *b) { return strcmp(a,b) == 0; }
+
 // Handle USART RX
 void Handle_USART_Message(void)
 {
 	// Example: echo back the received message
 	// printf("Received: %s\r\n", msg_buf);
-	HAL_UART_Transmit(&huart2, (uint8_t*)"Echo: ", 6, 100);
-	HAL_UART_Transmit(&huart2, (uint8_t*)msg_buf, strlen(msg_buf), 100);
-	HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
+	// HAL_UART_Transmit(&huart2, (uint8_t*)"Echo: ", 6, 100);
+	// HAL_UART_Transmit(&huart2, (uint8_t*)msg_buf, strlen(msg_buf), 100);
+	// HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
 
 	/* List of commands:
 		SET,<LEFT_RPM>, <RIGHT_RPM>		- Set target RPMs for motors
 		EN,<1|0>                     	- Enable or disable motors
 		BRK,<1|0>                    	- Enable or disable motor braking
-		ESTOP					   		- Emergency stop (set breaks on for 3 seconds and then disable motors, latches until controller restart)
+		ESTOP					   		- Emergency stop (disable motors, latches until controller restart)
 		PING							- Respond with PONG
 		PID,<P>,<I>,<D>            		- Set PID parameters for all motors
 	*/
+	if (ESTOP) return; // ignore all commands if ESTOP is set
+	
+	// Create null-terminated copy of msg_buf
+	char line[LINE_MAX];
+	strncpy(line, msg_buf, sizeof(line)-1);
+	line[sizeof(line)-1] = '\0';
+
+	// tokenise
+	char *cmd = strtok(line, ",");
+	char *a1 = strtok(NULL, ",");
+	char *a2 = strtok(NULL, ",");
+	char *a3 = strtok(NULL, ",");
+	
+	if (!cmd) return;
+
+	if (streq(cmd, "SET"))
+	{
+		int32_t l, r;
+		if (parse_int32(a1, &l) && parse_int32(a2, &r))
+		{
+			Set_Left_RPM(l);
+			Set_Right_RPM(r);
+			uart_print("OK\r\n");
+		}
+		else uart_print("ERR,BADARGS\r\n");
+	}
+}
+
+bool parse_int32(const char *str, int32_t *out_value)
+{
+	if (!str) return false;
+
+	char *endptr = NULL;
+	long val = strtol(str, &endptr, 10);
+	if (endptr == str || *endptr != '\0') return false; // not clean integer
+	*out_value = (int32_t)val;
+	return true;
 }
 
 // Report status over USART
 void Report_Telemetry_USART(void)
 {
 	// Telemetry format:
-	// TEL,<motor1_rpm>,<motor2_rpm>,<motor3_rpm>,<motor4_rpm>\r\n
+	// TEL,<motors_enabled>,<ESTOP>,<motor1_rpm>,<motor2_rpm>,<motor3_rpm>,<motor4_rpm>\r\n
 
 	char buf[160];
 	int n = snprintf(buf, sizeof(buf),
-		"TEL,%d,%d,%d,%d\r\n",
+		"TEL,%u,%u,%d,%d,%d,%d\r\n",
+		Motors_Enabled, ESTOP,
 		(int)motor1.rpm, (int)motor2.rpm, (int)motor3.rpm, (int)motor4.rpm
 	);
 
 	if (n > 0)
 	{
-		HAL_UART_Transmit(&huart2, (uint8_t*)buf, (uint16_t)n, 20);
+		// HAL_UART_Transmit(&huart2, (uint8_t*)buf, (uint16_t)n, 20);
+		uart_print(buf);
 	}
+}
+
+void uart_print(const char *str)
+{
+	HAL_UART_Transmit(&huart2, (uint8_t*)str, (uint16_t)strlen(str), 50);
 }
 
 // Get encoder count from timer
