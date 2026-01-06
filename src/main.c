@@ -15,7 +15,7 @@ static volatile bool msg_ready = false;
 static char msg_buf[LINE_MAX];
 
 static uint32_t last_tel_ms = 0;
-const uint32_t TEL_PERIOD_MS = 20;	// 50 Hz telemetry
+const uint32_t TEL_PERIOD_MS = 50;	// 20 Hz telemetry report rate
 static uint32_t last_rx_ms = 0;
 
 static void ProcessBytes(const uint8_t *data, uint16_t len);
@@ -140,15 +140,19 @@ static void ProcessBytes(const uint8_t *data, uint16_t len)
 
         if (c == '\n')
         {
-            // finalize line
-            uint16_t n = line_len;
-            if (n >= LINE_MAX) n = LINE_MAX - 1;
+			if (!msg_ready)
+			{
+				// finalize line
+				uint16_t n = line_len;
+				if (n >= LINE_MAX) n = LINE_MAX - 1;
 
-            memcpy(msg_buf, line_buf, n);
-            msg_buf[n] = '\0';
+				memcpy(msg_buf, line_buf, n);
+				msg_buf[n] = '\0';
 
-            line_len = 0;
-            msg_ready = true;   // main loop will handle it
+				line_len = 0;
+				msg_ready = true;   // main loop will handle it
+			}
+			// else drop line – previous message not yet processed
         }
         else
         {
@@ -186,7 +190,7 @@ void Handle_USART_Message(void)
 	char *cmd = strtok(line, ",");
 	char *a1 = strtok(NULL, ",");
 	char *a2 = strtok(NULL, ",");
-	char *a3 = strtok(NULL, ",");
+	// char *a3 = strtok(NULL, ",");
 	
 	if (!cmd) return;
 
@@ -217,17 +221,17 @@ void Handle_USART_Message(void)
 	}
 
 	// BRK,<1|0>
-	else if (streq(cmd, "BRK"))
-	{
-		int32_t brk;
-		if (parse_int32(a1, &brk))
-		{
-			if (brk) Enable_Motor_Braking();
-			else Disable_Motor_Braking();
-			uart_print("OK\r\n");
-		}
-		else uart_print("ERR,BADARGS\r\n");
-	}
+	// else if (streq(cmd, "BRK"))
+	// {
+	// 	int32_t brk;
+	// 	if (parse_int32(a1, &brk))
+	// 	{
+	// 		if (brk) Enable_Motor_Braking();
+	// 		else Disable_Motor_Braking();
+	// 		uart_print("OK\r\n");
+	// 	}
+	// 	else uart_print("ERR,BADARGS\r\n");
+	// }
 
 	// ESTOP
 	else if (streq(cmd, "ESTOP"))
@@ -239,18 +243,24 @@ void Handle_USART_Message(void)
 	// PING
 	else if (streq(cmd, "PING"))
 	{
-		uart_print("OK\r\n");
+		if (a1)
+		{
+			char response[LINE_MAX];
+			snprintf(response, sizeof(response), "PONG,%s\r\n", a1);
+			uart_print(response);
+		}
+		else uart_print("PONG\r\n");
 	}
 
 	// PID
-	else if (streq(cmd, "PID"))
-	{
-		float p, i, d;
-		if (a1 && a2 && a3)
-		{
-			// not implemented yet
-		}
-	}
+	// else if (streq(cmd, "PID"))
+	// {
+	// 	float p, i, d;
+	// 	if (a1 && a2 && a3)
+	// 	{
+	// 		// not implemented yet
+	// 	}
+	// }
 }
 
 bool parse_int32(const char *str, int32_t *out_value)

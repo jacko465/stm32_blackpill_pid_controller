@@ -20,7 +20,7 @@ extern "C" {
 #define LINE_MAX 128
 extern uint8_t rx_dma_buf[RX_BUF_LEN]; // DMA RX buffer
 
-#define LAST_RX_TIMEOUT_MS 1000 // Timeout if no RX for 1000 ms
+#define LAST_RX_TIMEOUT_MS 200 // Timeout if no RX for 200 ms
 
 // LOOP FREQUENCIES
 #define PID_LOOP_FREQUENCY_HZ 1000.0f         // 1kHz PID loop
