@@ -72,7 +72,7 @@ int main(void)
 			// No messages received for LAST_RX_TIMEOUT_MS -> stop motors
 			Set_Left_RPM(0);
 			Set_Right_RPM(0);
-			Disable_Motors();
+			// Disable_Motors();
 		}
 
 		// Report telemetry over serial every TEL_PERIOD_MS
@@ -202,7 +202,7 @@ void Handle_USART_Message(void)
 		{
 			Set_Left_RPM(l);
 			Set_Right_RPM(r);
-			uart_print("OK\r\n");
+			uart_print("OK,SET\r\n");
 		}
 		else uart_print("ERR,BADARGS\r\n");
 	}
@@ -215,7 +215,7 @@ void Handle_USART_Message(void)
 		{
 			if (en) Enable_Motors();
 			else Disable_Motors();
-			uart_print("OK\r\n");
+			uart_print("OK,EN\r\n");
 		}
 		else uart_print("ERR,BADARGS\r\n");
 	}
