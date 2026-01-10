@@ -61,7 +61,8 @@ class STM32MotorControllerComms:
         print("Motor test completed.")
 
 if __name__ == "__main__":
-    serial_port = "COM3"
+    # serial_port = "COM3"
+    serial_port = "/dev/ttyAMA0"
     baud_rate = 115200
     try:
         comms = STM32MotorControllerComms(serial_port, baud_rate)
