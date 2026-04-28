@@ -14,7 +14,7 @@ A PID-based motor control system for the STM32F411 Black Pill microcontroller, d
 
 ### Motor Specifications
 - Encoder: 11 PPR (basic) × 4 (quadrature) × 35.5 (gear ratio) = **1562 counts/revolution**
-- PWM Frequency: Configured via TIM1
+- PWM Frequency: Configured via TIM1 = 20kHz
 - Control Loop: 1 ms update period (1 kHz)
 - Encoder Reading: 10 ms update period (100 Hz)
 
