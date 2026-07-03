@@ -2,7 +2,7 @@
 
 <img src="v1_pid_controller.jpg" alt="Example v1 PID controller deployment" width="400">
 
-*Example v1 deployment of the PID controller.*
+*v1 deployment of the PID controller.*
 
 A PID-based motor control system for the STM32F411 Black Pill microcontroller, designed to control 4 DC motors with encoders via H-bridge drivers (e.g., DRV8871).
 
